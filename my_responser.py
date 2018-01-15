@@ -3,13 +3,14 @@ import random
 import urllib.request
 import urllib.parse
 import time
-
+import hashlib
 
 
 responser_table = {}
 authentication_table = {}
 
-partner_id = ''
+partner_id = '33227392'
+partner_key = 'hlQtoKynWKTvG5/PGiQL6UxAit9ABu3yK7Hvew0U0uSxTovXqGeEDz3Tw9iVyDcmbbIhQ5SGXXnt2wrSOz2N7g=='
 
 
 
@@ -17,12 +18,12 @@ def responser(json_object):
 	request_type = json_object['request_type']
 	if(request_type != 'request_type_sign_in'):
 		# authenticate the request
-		# if(json_object['authentication'] not in authentication_table):
-		#	json_reply_object = {}
-		#	json_reply_object['return_code'] = 0
-		#	json_reply_object['error_message'] = 'Authentication failed.'
-		#	json_reply_object['data'] = {}
-		#	return json.dumps(json_reply_object)
+		if(json_object['authentication'] not in authentication_table):
+			json_reply_object = {}
+			json_reply_object['return_code'] = 0
+			json_reply_object['error_message'] = 'Authentication failed.'
+			json_reply_object['data'] = {}
+			return json.dumps(json_reply_object)
 	#call the responser
 	return responser_table[request_type](json_object['data'])
 
@@ -65,6 +66,7 @@ def sign_in_responser(data=None):
 	#close the account file
 	finally:
 		account_file.close()
+
 responser_table['request_type_sign_in'] = sign_in_responser
 
 
@@ -78,9 +80,9 @@ def create_room_responser(data=None):
 	call_api_dict['start_time'] = time_string_to_unix_timestamp(data['start_time'])
 	call_api_dict['end_time'] = time_string_to_unix_timestamp(data['end_time'])
 	call_api_dict['timestamp'] = int(time.time())
+	call_api_dict['partner_id'] = partner_id
 	# calculate the sign used to call API
 	call_api_sign = calculate_sign(call_api_dict)
-	call_api_dict['partner_id'] = partner_id
 	call_api_dict['sign'] = call_api_sign
 
 	# post the create-room-request to the Baijiacloud server
@@ -107,7 +109,9 @@ responser_table['request_type_create_room'] = create_room_responser
 # -----------------------------------------------------------------------------
 #responser for update-room-request
 def update_room_responser(data=None):
-	pass
+	# assemble the requset data
+	call_api_dict = {}
+
 responser_table['request_type_update_room'] = update_room_responser
 
 
@@ -125,3 +129,22 @@ responser_table['request_type_delete_room'] = delete_room_responser
 def time_string_to_unix_timestamp(string):
 	format = '%Y-%m-%d %H:%m'
 	return int(time.mktime(time.strptime(string, format)))
+
+
+
+# -----------------------------------------------------------------------------
+# Function that calculate sign for the request to Baijiacloud server
+def calculate_sign(call_api_dict):
+	global partner_key
+
+	# assemble the request parameters
+	key_table = sorted(iter(call_api_dict))
+	request_string = ''
+	for i in key_table:
+		request_string += i + '=' + call_api_dict[i] + '&'
+	request_string += 'partner_key=' + partner_key
+	
+	# calculate the md5	
+	md5_obj = hashlib.md5()
+	md5_obj.update(request_string.encode('utf-8'))
+	return md5_obj.hexdigest()
