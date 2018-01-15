@@ -15,7 +15,7 @@ partner_id = ''
 
 def responser(json_object):
 	request_type = json_object['request_type']
-	if(request_type != 'request_type_sign_in'):
+	#if(request_type != 'request_type_sign_in'):
 		# authenticate the request
 		# if(json_object['authentication'] not in authentication_table):
 		#	json_reply_object = {}
