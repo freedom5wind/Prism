@@ -16,16 +16,16 @@ partner_key = 'hlQtoKynWKTvG5/PGiQL6UxAit9ABu3yK7Hvew0U0uSxTovXqGeEDz3Tw9iVyDcmb
 
 def responser(json_object):
 	request_type = json_object['request_type']
-	#if(request_type != 'request_type_sign_in'):
-		# authenticate the request
-		if(json_object['authentication'] not in authentication_table):
-			json_reply_object = {}
-			json_reply_object['return_code'] = 0
-			json_reply_object['error_message'] = 'Authentication failed.'
-			json_reply_object['data'] = {}
-			return json.dumps(json_reply_object)
+#	if(request_type != 'request_type_sign_in'):
+#		# authenticate the request
+#		if(json_object['authentication'] not in authentication_table):
+#			json_reply_object = {}
+#			json_reply_object['return_code'] = 0
+#			json_reply_object['error_message'] = 'Authentication failed.'
+#			json_reply_object['data'] = {}
+#			return json.dumps(json_reply_object)
 	#call the responser
-	return responser_table[request_type](json_object['data'])
+	return responser_table[request_type](eval(json_object['data']))
 
 
 
